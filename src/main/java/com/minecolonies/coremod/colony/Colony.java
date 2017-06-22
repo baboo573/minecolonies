@@ -16,6 +16,7 @@ import com.minecolonies.coremod.permissions.ColonyPermissionEventHandler;
 import com.minecolonies.coremod.tileentities.ScarecrowTileEntity;
 import com.minecolonies.coremod.tileentities.TileEntityColonyBuilding;
 import com.minecolonies.coremod.util.AchievementUtils;
+import com.minecolonies.coremod.util.BarbarianUtils;
 import com.minecolonies.coremod.util.ColonyUtils;
 import com.minecolonies.coremod.util.ServerUtils;
 import net.minecraft.advancements.Advancement;
@@ -65,13 +66,13 @@ public class Colony implements IColony
     private static final String TAG_ABANDONED                  = "abandoned";
 
     //statistics tags
-    private static final String TAG_STATISTICS        = "statistics";
-    private static final String TAG_MINER_STATISTICS  = "minerStatistics";
-    private static final String TAG_MINER_ORES        = "ores";
-    private static final String TAG_MINER_DIAMONDS    = "diamonds";
-    private static final String TAG_FARMER_STATISTICS = "farmerStatistics";
-    private static final String TAG_FARMER_WHEAT      = "wheat";
-    private static final String TAG_FARMER_POTATOES   = "potatoes";
+    private static final String TAG_STATISTICS            = "statistics";
+    private static final String TAG_MINER_STATISTICS      = "minerStatistics";
+    private static final String TAG_MINER_ORES            = "ores";
+    private static final String TAG_MINER_DIAMONDS        = "diamonds";
+    private static final String TAG_FARMER_STATISTICS     = "farmerStatistics";
+    private static final String TAG_FARMER_WHEAT          = "wheat";
+    private static final String TAG_FARMER_POTATOES       = "potatoes";
     private static final String TAG_FARMER_CARROTS        = "carrots";
     private static final String TAG_GUARD_STATISTICS      = "guardStatistics";
     private static final String TAG_GUARD_MOBS            = "mobs";
@@ -82,16 +83,24 @@ public class Colony implements IColony
     private static final String TAG_LUMBERJACK_STATISTICS = "lumberjackStatistics";
     private static final String TAG_LUMBERJACK_TREES      = "trees";
     private static final String TAG_LUMBERJACK_SAPLINGS   = "saplings";
-    private static final int    NUM_ACHIEVEMENT_FIRST    = 1;
+    private static final int    NUM_ACHIEVEMENT_FIRST     = 1;
     private static final int    NUM_ACHIEVEMENT_SECOND    = 25;
     private static final int    NUM_ACHIEVEMENT_THIRD     = 100;
     private static final int    NUM_ACHIEVEMENT_FOURTH    = 500;
     private static final int    NUM_ACHIEVEMENT_FIFTH     = 1000;
+    private static final int    CITIZEN_MINIMUM_FOR_RAID  = 5;
+    private static final int    NUM_ONE                   = 1;
+
+    /**
+     * Values used for Raid event
+     */
+    private boolean hasRaidHappened = true;
+    private boolean raidWillHappen  = false;
 
     /**
      * Amount of ticks that pass/hour.
      */
-    private static final int TICKS_HOUR        = 20 * 60 * 60;
+    private static final int TICKS_HOUR = 20 * 60 * 60;
 
     /**
      * Average happiness of a citizen.
@@ -106,7 +115,7 @@ public class Colony implements IColony
     /**
      * Bonus happiness each factor added.
      */
-    private static final double HAPPINESS_FACTOR         = 0.1;
+    private static final double HAPPINESS_FACTOR = 0.1;
 
     /**
      * Saturation at which a citizen starts being happy.
@@ -377,7 +386,7 @@ public class Colony implements IColony
             freePositions.add(block);
         }
 
-        if(compound.hasKey(TAG_HAPPINESS))
+        if (compound.hasKey(TAG_HAPPINESS))
         {
             this.overallHappiness = compound.getDouble(TAG_HAPPINESS);
         }
@@ -404,7 +413,7 @@ public class Colony implements IColony
             townHall = (BuildingTownHall) building;
         }
 
-        if(building instanceof BuildingWareHouse && wareHouse == null)
+        if (building instanceof BuildingWareHouse && wareHouse == null)
         {
             wareHouse = (BuildingWareHouse) building;
         }
@@ -740,13 +749,13 @@ public class Colony implements IColony
 
         // Add owners
         world.getMinecraftServer().getPlayerList().getPlayers()
-                .stream()
-                .filter(permissions::isSubscriber)
-                .forEachOrdered(subscribers::add);
+          .stream()
+          .filter(permissions::isSubscriber)
+          .forEachOrdered(subscribers::add);
 
-        if(subscribers.isEmpty())
+        if (subscribers.isEmpty())
         {
-            if(ticksPassed >= TICKS_HOUR)
+            if (ticksPassed >= TICKS_HOUR)
             {
                 ticksPassed = 0;
                 lastContactInHours++;
@@ -767,7 +776,7 @@ public class Colony implements IColony
 
                 final double distance = player.getDistanceSq(center);
                 if (distance < MAX_SQ_DIST_SUBSCRIBER_UPDATE
-                        || (oldSubscribers.contains(player) && distance < MAX_SQ_DIST_OLD_SUBSCRIBER_UPDATE))
+                      || (oldSubscribers.contains(player) && distance < MAX_SQ_DIST_OLD_SUBSCRIBER_UPDATE))
                 {
                     // Players become subscribers if they come within 16 blocks of the edge of the colony
                     // Players remain subscribers while they remain within double the colony's radius
@@ -933,7 +942,7 @@ public class Colony implements IColony
         if (Structures.isDirty() || hasNewSubscribers)
         {
             subscribers.stream()
-                .forEach(player -> MineColonies.getNetwork().sendTo(new ColonyStylesMessage(), player));
+              .forEach(player -> MineColonies.getNetwork().sendTo(new ColonyStylesMessage(), player));
         }
     }
 
@@ -1032,6 +1041,34 @@ public class Colony implements IColony
     }
 
     /**
+     * Set whether a raid will happen tonight
+     */
+    public void setRaidWillHappen(final boolean willRaid)
+    {
+        raidWillHappen = willRaid;
+    }
+
+    @Override
+    public boolean isWillRaid()
+    {
+        return raidWillHappen;
+    }
+
+    /**
+     * Set whether a raid has happened.
+     */
+    public void setHasRaided(final boolean hasRaided)
+    {
+        hasRaidHappened = hasRaided;
+    }
+
+    @Override
+    public boolean isHasRaided()
+    {
+        return hasRaidHappened;
+    }
+
+    /**
      * Any per-world-tick logic should be performed here.
      * NOTE: If the Colony's world isn't loaded, it won't have a world tick.
      * Use onServerTick for logic that should _always_ run.
@@ -1040,7 +1077,7 @@ public class Colony implements IColony
      */
     public void onWorldTick(@NotNull final TickEvent.WorldTickEvent event)
     {
-        if (event.world != getWorld())
+        if (event.world != world || world == null)
         {
             /**
              * If the event world is not the colony world ignore. This might happen in interactions with other mods.
@@ -1051,6 +1088,11 @@ public class Colony implements IColony
 
         if (event.phase == TickEvent.Phase.START)
         {
+            if(this.citizens.size() >= CITIZEN_MINIMUM_FOR_RAID)
+            {
+                BarbarianUtils.eventRaid(this);
+            }
+
             //  Detect CitizenData whose EntityCitizen no longer exist in world, and clear the mapping
             //  Consider handing this in an ChunkUnload Event instead?
             citizens.values()
@@ -1090,12 +1132,12 @@ public class Colony implements IColony
             building.onWorldTick(event);
         }
 
-        if(isDay && !world.isDaytime())
+        if (isDay && !world.isDaytime())
         {
             isDay = false;
             updateOverallHappiness();
         }
-        else if(!isDay && world.isDaytime())
+        else if (!isDay && world.isDaytime())
         {
             isDay = true;
         }
@@ -1110,12 +1152,12 @@ public class Colony implements IColony
         int housing = 0;
         int workers = 1;
         double saturation = 0;
-        for(final CitizenData citizen: citizens.values())
+        for (final CitizenData citizen : citizens.values())
         {
             final AbstractBuildingWorker buildingWorker = citizen.getWorkBuilding();
-            if(buildingWorker != null)
+            if (buildingWorker != null)
             {
-                if(buildingWorker instanceof BuildingGuardTower)
+                if (buildingWorker instanceof BuildingGuardTower)
                 {
                     guards += buildingWorker.getBuildingLevel();
                 }
@@ -1126,7 +1168,7 @@ public class Colony implements IColony
             }
 
             final BuildingHome home = citizen.getHomeBuilding();
-            if(home != null)
+            if (home != null)
             {
                 housing += home.getBuildingLevel();
             }
@@ -1134,26 +1176,26 @@ public class Colony implements IColony
             saturation += citizen.getSaturation();
         }
 
-        final int averageHousing = housing/Math.max(1, citizens.size());
+        final int averageHousing = housing / Math.max(1, citizens.size());
 
-        if(averageHousing > 1)
+        if (averageHousing > NUM_ONE)
         {
             increaseOverallHappiness(averageHousing * HAPPINESS_FACTOR);
         }
 
-        final int averageSaturation = (int) (saturation/citizens.size());
-        if(averageSaturation < WELL_SATURATED_LIMIT)
+        final int averageSaturation = (int) (saturation / citizens.size());
+        if (averageSaturation < WELL_SATURATED_LIMIT)
         {
             decreaseOverallHappiness((averageSaturation - WELL_SATURATED_LIMIT) * -HAPPINESS_FACTOR);
         }
-        else if(averageSaturation > WELL_SATURATED_LIMIT)
+        else if (averageSaturation > WELL_SATURATED_LIMIT)
         {
             increaseOverallHappiness((averageSaturation - WELL_SATURATED_LIMIT) * HAPPINESS_FACTOR);
         }
 
-        final int relation = workers/guards;
+        final int relation = workers / guards;
 
-        if(relation > 1)
+        if (relation > NUM_ONE)
         {
             decreaseOverallHappiness(relation * HAPPINESS_FACTOR);
         }
@@ -1713,7 +1755,7 @@ public class Colony implements IColony
         {
             townHall = null;
         }
-        else if(building instanceof BuildingWareHouse)
+        else if (building instanceof BuildingWareHouse)
         {
             wareHouse = null;
         }
@@ -1894,6 +1936,7 @@ public class Colony implements IColony
 
     /**
      * Getter for overall happiness.
+     *
      * @return the overall happiness.
      */
     public double getOverallHappiness()
@@ -1903,6 +1946,7 @@ public class Colony implements IColony
 
     /**
      * Increase the overall happiness by an amount, cap at max.
+     *
      * @param amount the amount.
      */
     public void increaseOverallHappiness(final double amount)
@@ -1913,6 +1957,7 @@ public class Colony implements IColony
 
     /**
      * Decrease the overall happiness by an amount, cap at min.
+     *
      * @param amount the amount.
      */
     public void decreaseOverallHappiness(final double amount)
@@ -1935,6 +1980,7 @@ public class Colony implements IColony
 
     /**
      * Get all the waypoints of the colony.
+     *
      * @return copy of hashmap.
      */
     public Map<BlockPos, IBlockState> getWayPoints()
