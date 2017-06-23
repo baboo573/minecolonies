@@ -7,9 +7,11 @@ import com.minecolonies.coremod.commands.CommandEntryPoint;
 import com.minecolonies.coremod.network.messages.*;
 import com.minecolonies.coremod.proxy.IProxy;
 import com.minecolonies.coremod.util.RecipeHandler;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.discovery.ASMDataTable;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -22,8 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 @Mod(modid = Constants.MOD_ID, name = Constants.MOD_NAME, version = Constants.VERSION,
-  /*dependencies = Constants.FORGE_VERSION,*/ acceptedMinecraftVersions = Constants.MC_VERSION,
-  guiFactory = Constants.CONFIG_GUI_LOCATION)
+  /*dependencies = Constants.FORGE_VERSION,*/ acceptedMinecraftVersions = Constants.MC_VERSION)
 public class MineColonies
 {
     private static final Logger logger = LogManager.getLogger(Constants.MOD_ID);
@@ -72,6 +73,8 @@ public class MineColonies
         return logger;
     }
 
+
+
     /**
      * Event handler for forge pre init event.
      *
@@ -82,8 +85,15 @@ public class MineColonies
     {
         proxy.registerSounds();
         proxy.registerEntities();
-
         proxy.registerEntityRendering();
+
+        @NotNull Configuration configuration = new Configuration(event.getSuggestedConfigurationFile());
+        configuration.load();
+
+        if (configuration.hasChanged())
+        {
+            configuration.save();
+        }
     }
 
     /**
@@ -98,7 +108,7 @@ public class MineColonies
 
         proxy.registerTileEntities();
 
-        RecipeHandler.init(Configurations.Gameplay.enableInDevelopmentFeatures, Configurations.Gameplay.supplyChests);
+        RecipeHandler.init(Configurations.gameplay.enableInDevelopmentFeatures, Configurations.gameplay.supplyChests);
 
         proxy.registerEvents();
 

@@ -92,7 +92,7 @@ public abstract class AbstractEntityBarbarian extends EntityMob
     @Override
     public void onLivingUpdate()
     {
-        if (this.getHeldItemMainhand().getItem() instanceof ItemChiefSword && /*Configurations.Gameplay.barbarianHordeDifficulty >= BARBARIAN_HORDE_DIFFICULTY_FIVE &&*/ currentCount <= 0)
+        if (this.getHeldItemMainhand().getItem() instanceof ItemChiefSword && Configurations.gameplay.barbarianHordeDifficulty >= BARBARIAN_HORDE_DIFFICULTY_FIVE && currentCount <= 0)
         {
             final Stream<EntityLivingBase> barbarians = BarbarianUtils.getBarbariansCloseToEntity(this, SPEED_EFFECT_DISTANCE);
             barbarians.forEach(entity -> entity.addPotionEffect(new PotionEffect(SPEED_EFFECT, SPEED_EFFECT_DURATION, SPEED_EFFECT_MULTIPLIER)));

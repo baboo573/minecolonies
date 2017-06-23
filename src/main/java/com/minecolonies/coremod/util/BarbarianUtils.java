@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 /**
  * Utils for the Barbarians
  */
-public final class BarbarianUtils
+public class BarbarianUtils
 {
     private static final ResourceLocation BARBARIAN = EntityList.getKey(EntityBarbarian.class);
     private static final ResourceLocation ARCHER    = EntityList.getKey(EntityArcherBarbarian.class);
@@ -37,7 +37,7 @@ public final class BarbarianUtils
     private static int numberOfArchers    = 0;
     private static int numberOfChiefs     = 0;
 
-    private static final int MAX_SIZE = 40/*Configurations.Gameplay.maxBarbarianHordeSize*/;
+    private static final int MAX_SIZE = Configurations.gameplay.maxBarbarianHordeSize;
 
     private static final double BARBARIANS_MULTIPLIER        = 0.5;
     private static final double ARCHER_BARBARIANS_MULTIPLIER = 0.25;
@@ -172,13 +172,13 @@ public final class BarbarianUtils
         else if (!colony.isHasRaided())
         {
 
-            if (colony.isWillRaid() /*&& Configurations.Gameplay.doBarbariansSpawn*/ && (world.getDifficulty() != EnumDifficulty.PEACEFUL))
+            if (colony.isWillRaid() && Configurations.gameplay.doBarbariansSpawn && (world.getDifficulty() != EnumDifficulty.PEACEFUL))
             {
                 numberOfSpawns(colony);
 
                 final BlockPos targetSpawnPoint = calculateSpawnLocation(world, colony);
 
-                if (Configurations.Gameplay.enableInDevelopmentFeatures)
+                if (Configurations.gameplay.enableInDevelopmentFeatures)
                 {
                     LanguageHandler.sendPlayersMessage(
                       colony.getMessageEntityPlayers(),
@@ -268,7 +268,7 @@ public final class BarbarianUtils
             return null;
         }
         final BlockPos center = colonyView.getCenter();
-        final int radius = Configurations.Gameplay.workingRangeTownHall;
+        final int radius = Configurations.gameplay.workingRangeTownHall;
 
         final int randomDegree = world.rand.nextInt((int) WHOLE_CIRCLE);
 
@@ -286,7 +286,7 @@ public final class BarbarianUtils
      */
     private static boolean raidThisNight(final World world)
     {
-        final float chance = (float) 1 / 1 /*Configurations.Gameplay.averageNumberOfNightsBetweenRaids*/;
+        final float chance = (float) 1 / Configurations.gameplay.averageNumberOfNightsBetweenRaids;
         final float randomFloat = world.rand.nextFloat();
         return randomFloat < chance;
     }
