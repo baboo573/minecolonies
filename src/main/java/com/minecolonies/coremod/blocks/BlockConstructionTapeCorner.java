@@ -1,6 +1,7 @@
 package com.minecolonies.coremod.blocks;
 
 import com.minecolonies.api.util.constant.Constants;
+import com.minecolonies.blockout.Log;
 import com.minecolonies.coremod.creativetab.ModCreativeTabs;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockHorizontal;
