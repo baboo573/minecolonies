@@ -14,6 +14,8 @@ public final class ModItems
     public static Item caliper;
     public static Item scepterGuard;
     public static Item supplyCamp;
+    public static Item ancientTome;
+    public static Item chiefSword;
 
     public static final Item itemAchievementProxySettlement = new ItemAchievementProxy("sizeSettlement");
     public static final Item itemAchievementProxyTown       = new ItemAchievementProxy("sizeTown");
@@ -45,5 +47,7 @@ public final class ModItems
         caliper = new ItemCaliper();
         scepterGuard = new ItemScepterGuard();
         supplyCamp = new ItemSupplyCampDeployer();
+        ancientTome = new ItemAncientTome();
+        chiefSword = new ItemChiefSword();
     }
 }
