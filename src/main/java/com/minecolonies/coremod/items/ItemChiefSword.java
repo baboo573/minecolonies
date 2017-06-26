@@ -39,7 +39,6 @@ public class ItemChiefSword extends ItemSword
         super(ToolMaterial.GOLD);
         super.setUnlocalizedName(Constants.MOD_ID.toLowerCase() + "." + ITEM_NAME);
         setRegistryName(ITEM_NAME);
-        GameRegistry.register(this);
     }
 
     @Override

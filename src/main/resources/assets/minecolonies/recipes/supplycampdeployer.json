@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "   ",
+    "C C",
+    "CCC"
+  ],
+  "conditions": [
+    {
+      "type": "supply",
+    }
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:chest"
+    }
+  },
+    "result": {
+      "item": "minecolonies:supplycampdeployer"
+    }
+}

@@ -173,12 +173,6 @@ public class CommonProxy implements IProxy
     }
 
     @Override
-    public void registerSounds()
-    {
-        ModSoundEvents.registerSounds();
-    }
-
-    @Override
     public void registerTileEntityRendering()
     {
         /*
