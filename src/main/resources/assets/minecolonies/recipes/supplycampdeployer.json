@@ -5,11 +5,6 @@
     "C C",
     "CCC"
   ],
-  "conditions": [
-    {
-      "type": "supply"
-    }
-  ],
   "key": {
     "C": {
       "item": "minecraft:chest"
