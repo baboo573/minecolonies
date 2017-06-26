@@ -50,7 +50,7 @@ public final class ModItems
         registry.register(caliper = new ItemCaliper());
         registry.register(scepterGuard = new ItemScepterGuard());
         registry.register(supplyCamp = new ItemSupplyCampDeployer());
-        ancientTome = new ItemAncientTome();
-        chiefSword = new ItemChiefSword();
+        registry.register(ancientTome = new ItemAncientTome());
+        registry.register(chiefSword = new ItemChiefSword());
     }
 }
